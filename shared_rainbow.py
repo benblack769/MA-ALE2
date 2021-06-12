@@ -12,7 +12,7 @@ from all.presets.preset import Preset
 from all.presets import PresetBuilder
 from all.agents.independent import IndependentMultiagent
 from shared_utils import DummyEnv, IndicatorBody, IndicatorState
-from env_utils import InvertColorAgentIndicator, make_env
+from env_utils import make_env
 import argparse
 from all.environments import MultiagentPettingZooEnv
 from all.experiments.multiagent_env_experiment import MultiagentEnvExperiment
@@ -185,7 +185,7 @@ class RainbowAtariPreset(Preset):
 rainbow = PresetBuilder('rainbow', default_hyperparameters, RainbowAtariPreset)
 
 
-def make_rainbow_preset(env_name, device):
+def make_rainbow_preset(env_name, device, replay_buffer_size):
     env = make_env(env_name)
 
     agent0 = env.possible_agents[0]
@@ -196,7 +196,7 @@ def make_rainbow_preset(env_name, device):
         assert act_space == env.action_spaces[agent]
     env_agents = env.possible_agents
     multi_agent_env = MultiagentPettingZooEnv(env, env_name, device=device)
-    preset = rainbow.env(multi_agent_env).hyperparameters().device(device).env(
+    preset = rainbow.env(multi_agent_env).hyperparameters(replay_buffer_size=replay_buffer_size).device(device).env(
         DummyEnv(
             obs_space, act_space, env_agents
         )

@@ -6,10 +6,17 @@ from all.presets import atari
 import os
 import torch
 from shared_rainbow import make_rainbow_preset
+from independent_rainbow import make_indepedent_rainbow
+
+trainer_types = {
+    "shared_rainbow": make_rainbow_preset,
+    "independent_rainbow": make_indepedent_rainbow,
+}
 
 def main():
     parser = argparse.ArgumentParser(description="Run an multiagent Atari benchmark.")
     parser.add_argument("env", help="Name of the Atari game (e.g. Pong).")
+    parser.add_argument("trainer_type", help="Name of the type of training method.")
     parser.add_argument(
         "--device",
         default="cuda",
@@ -23,23 +30,19 @@ def main():
     parser.add_argument(
         "--frames", type=int, default=50e6, help="The number of training frames."
     )
-    parser.add_argument(
-        "--render", action="store_true", default=False, help="Render the environment."
-    )
     args = parser.parse_args()
 
-    preset, env = make_rainbow_preset(args.env, args.device)
+    preset, env = trainer_types[args.trainer_type](args.env, args.device, args.replay_buffer_size)
 
     experiment = MultiagentEnvExperiment(
         preset,
         env,
         write_loss=False,
-        render=args.render,
     )
     # run_experiment()
     os.mkdir("checkpoint")
     num_frames_train = int(args.frames)
-    frames_per_save = 200000
+    frames_per_save = num_frames_train//100
     for frame in range(0,num_frames_train,frames_per_save):
         experiment.train(frames=frame)
         torch.save(preset, f"checkpoint/{frame+frames_per_save:08d}.pt")
