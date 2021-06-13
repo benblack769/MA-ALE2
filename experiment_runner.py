@@ -25,12 +25,14 @@ def main():
     parser.add_argument(
         "--replay_buffer_size",
         default=1000000,
+        type=int,
         help="The size of the replay buffer, if applicable",
     )
     parser.add_argument(
         "--frames", type=int, default=50e6, help="The number of training frames."
     )
     args = parser.parse_args()
+    experiment_name = f"{args.trainer_type}_{args.env}_RB{args.replay_buffer_size}_F{args.frames}"
 
     preset, env = trainer_types[args.trainer_type](args.env, args.device, args.replay_buffer_size)
 
@@ -40,12 +42,13 @@ def main():
         write_loss=False,
     )
     # run_experiment()
-    os.mkdir("checkpoint")
+    save_folder = f"checkpoint/{experiment_name}"
+    os.makedirs(save_folder)
     num_frames_train = int(args.frames)
     frames_per_save = num_frames_train//100
     for frame in range(0,num_frames_train,frames_per_save):
         experiment.train(frames=frame)
-        torch.save(preset, f"checkpoint/{frame+frames_per_save:08d}.pt")
+        torch.save(preset, f"{save_folder}/{frame+frames_per_save:08d}.pt")
     # experiment.test(episodes=5)
     experiment._save_model()
 
