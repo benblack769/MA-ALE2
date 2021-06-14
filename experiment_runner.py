@@ -48,7 +48,7 @@ def main():
     frames_per_save = num_frames_train//100
     for frame in range(0,num_frames_train,frames_per_save):
         experiment.train(frames=frame)
-        torch.save(preset, f"{save_folder}/{frame+frames_per_save:08d}.pt")
+        torch.save(preset, f"{save_folder}/{frame+frames_per_save:09d}.pt")
     # experiment.test(episodes=5)
     experiment._save_model()
 
