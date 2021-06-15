@@ -8,7 +8,7 @@ def make_env(env_name):
     env = importlib.import_module('pettingzoo.atari.{}'.format(env_name)).env(obs_type='grayscale_image')
     env = max_observation_v0(env, 2)
     env = frame_skip_v0(env, 4)
-    env = InvertColorAgentIndicator(env)
+    # env = InvertColorAgentIndicator(env) # handled by body
     env = resize_v0(env, 84, 84)
     env = reshape_v0(env, (1, 84, 84))
     return env

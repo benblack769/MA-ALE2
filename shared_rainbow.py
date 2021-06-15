@@ -26,8 +26,8 @@ default_hyperparameters = {
     "lr": 6.25e-5,
     "eps": 1.5e-4,
     # Training settings
-    "minibatch_size": 32,
-    "update_frequency": 4,
+    "minibatch_size": 128,
+    "update_frequency": 32,
     "target_update_frequency": 1000,
     # Replay buffer settings
     "replay_start_size": 20000,
@@ -187,7 +187,7 @@ rainbow = PresetBuilder('rainbow', default_hyperparameters, RainbowAtariPreset)
 
 def make_rainbow_preset(env_name, device, replay_buffer_size):
     env = make_env(env_name)
-
+    from models import impala_rainbow
     agent0 = env.possible_agents[0]
     obs_space = env.observation_spaces[agent0]
     act_space = env.action_spaces[agent0]
@@ -196,7 +196,7 @@ def make_rainbow_preset(env_name, device, replay_buffer_size):
         assert act_space == env.action_spaces[agent]
     env_agents = env.possible_agents
     multi_agent_env = MultiagentPettingZooEnv(env, env_name, device=device)
-    preset = rainbow.env(multi_agent_env).hyperparameters(replay_buffer_size=replay_buffer_size).device(device).env(
+    preset = rainbow.env(multi_agent_env).hyperparameters(replay_buffer_size=replay_buffer_size,model_constructor=impala_rainbow).device(device).env(
         DummyEnv(
             obs_space, act_space, env_agents
         )

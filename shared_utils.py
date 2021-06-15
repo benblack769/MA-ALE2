@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-torch.set_num_threads(1)
+# torch.set_num_threads(1)
 
 
 from all.core import State, StateArray
@@ -11,23 +11,40 @@ from all.bodies.vision import LazyState, TensorDeviceCache
 
 class IndicatorState(State):
     @classmethod
-    def from_state(cls, state, frames, to_cache, agent_idx):
+    def from_state(cls, state, frames, to_cache, num_agents, agent_idx):
         state = IndicatorState(state, device=frames[0].device)
         state.to_cache = to_cache
         state.agent_idx = agent_idx
+        state.num_agents = num_agents
         state['observation'] = frames
         return state
+
+    def append_agent_to_obs(self, obs):
+        if self.num_agents == 2:
+            if self.agent_idx == 1:
+                rotated_obs = 255 - obs
+            else:
+                rotated_obs = obs
+        elif max_num_agents == 4:
+            rotated_obs = (255*self.agent_idx)//4 + obs
+
+        indicator = torch.zeros((2, )+obs.shape[1:],dtype=torch.uint8,device=obs.device)
+        indicator[0] = 255 * self.agent_idx % 2
+        indicator[1] = 255 * ((self.agent_idx+1) // 2) % 2
+
+        return torch.cat([obs, rotated_obs, indicator], dim=0)
 
     def __getitem__(self, key):
 
         if key == 'observation':
             obs = dict.__getitem__(self, key)
             if not torch.is_tensor(obs):
-                obs = torch.cat(dict.__getitem__(self, key), dim=0)
-            indicator = torch.zeros_like(obs)
-            indicator[self.agent_idx] = 255
+                obs = [self.append_agent_to_obs(o) for o in obs]
+                obs = torch.cat(obs, dim=0)
+            else:
+                assert False
 
-            return torch.cat([obs, indicator], dim=0)
+            return obs#torch.cat([obs, indicator], dim=0)
         return super().__getitem__(key)
 
     def update(self, key, value):
@@ -36,9 +53,7 @@ class IndicatorState(State):
             if not k == key:
                 x[k] = super().__getitem__(k)
         x[key] = value
-        state = IndicatorState(x, device=self.device)
-        state.to_cache = self.to_cache
-        state.agent_idx = self.agent_idx
+        state = IndicatorState.from_state(x, x['observation'], self.to_cache, self.num_agents, self.agent_idx)
         return state
 
     def to(self, device):
@@ -53,7 +68,7 @@ class IndicatorState(State):
                 x[key] = value.to(device)
             else:
                 x[key] = value
-        state = IndicatorState.from_state(x, x['observation'], self.to_cache, self.agent_idx)
+        state = IndicatorState.from_state(x, x['observation'], self.to_cache, self.num_agents, self.agent_idx)
         return state
 
 class IndicatorBody(Body):
@@ -64,7 +79,7 @@ class IndicatorBody(Body):
         self.to_cache = TensorDeviceCache(max_size=32)
 
     def process_state(self, state):
-        new_state = IndicatorState.from_state(state, dict.__getitem__(state,'observation'), self.to_cache, self.agent_idx)
+        new_state = IndicatorState.from_state(state, dict.__getitem__(state,'observation'), self.to_cache, self.num_agents, self.agent_idx)
         return new_state
 
 class DummyEnv():

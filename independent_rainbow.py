@@ -161,12 +161,15 @@ class RainbowAtariPreset(Preset):
 
 rainbow = PresetBuilder('rainbow', default_hyperparameters, RainbowAtariPreset)
 
+def make_independ_rainbow_net(env, **kwargs):
+    from models import impala_rainbow
+    return impala_rainbow(env, channels=1, **kwargs)
 
 def make_indepedent_rainbow(env_name, device, replay_buffer_size):
     env = make_env(env_name)
     env = MultiagentPettingZooEnv(env, env_name, device=device)
     presets = {
-        agent: rainbow.env(env.subenvs['first_0']).hyperparameters(replay_buffer_size=replay_buffer_size).build()
+        agent: rainbow.env(env.subenvs['first_0']).hyperparameters(replay_buffer_size=replay_buffer_size,model_constructor=make_independ_rainbow_net).build()
             for agent in env.agents
     }
     preset = IndependentMultiagentPreset("atari_experiment", env, presets)
