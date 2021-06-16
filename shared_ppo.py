@@ -1,46 +1,41 @@
-from all.environments import MultiagentAtariEnv
-from all.experiments.multiagent_env_experiment import MultiagentEnvExperiment
+from all.environments import GymVectorEnvironment
+from all.experiments import ParallelEnvExperiment
 from all.presets import atari
 from all.agents import Agent
 from all.logging import DummyWriter
 from all.presets import IndependentMultiagentPreset, Preset
 from all.core import State
 import torch
+from env_utils import make_env
+import supersuit as ss
+from pettingzoo.utils import to_parallel
+from models import impala_features, impala_value_head, impala_policy_head
+from env_utils import InvertColorAgentIndicator
 
-class SingleEnvAgent(Agent):
-    def __init__(self, agent):
-        self.agent = agent
+def make_vec_env(env_name, device):
+    env = make_env(env_name)
+    env = ss.black_death_v1(env)
+    env = InvertColorAgentIndicator(env)
+    env = to_parallel(env)
+    env = ss.pettingzoo_env_to_vec_env_v0(env)
+    env = ss.concat_vec_envs_v0(env, 4, num_cpus=1, base_class='stable_baselines3')
+    env = GymVectorEnvironment(env, "env_name", device=device)
+    return env
 
-    def act(self, state):
-        return self.agent.act(State.array([state]))
 
-
-class ToSingle(Preset):
-    def __init__(self, parallel_preset):
-        super().__init__(parallel_preset.name, parallel_preset.device, parallel_preset)
-        self.parallel_preset = parallel_preset
-        assert parallel_preset.n_envs == 1
-
-    def agent(self, writer=DummyWriter(), train_steps=float('inf')):
-        return SingleEnvAgent(self.parallel_preset.agent(writer=writer, train_steps=train_steps))
-
-    def test_agent(self):
-        return SingleEnvAgent(self.parallel_preset.test_agent())
-
-def main():
-    env_name = "space_invaders_v1"
-    device = "cuda"
-    env = MultiagentAtariEnv(env_name, device=device)
-    presets = {
-        'first_0':atari.dqn.env(env.subenvs['first_0']).hyperparameters(replay_buffer_size=10000).build(),
-        'second_0':ToSingle(atari.ppo.env(env.subenvs['second_0']).hyperparameters(epochs=5, n_envs=1).build()),
-    }
-    preset = IndependentMultiagentPreset("atari_experiment", env, presets)
-
-    experiment = MultiagentEnvExperiment(preset, env, write_loss=False, name="independent_"+env_name, save_freq=200000)
-    experiment.train(frames=1000000)
-    torch.save(preset,"trained_model.th")
-    experiment.test(3)
-
-if __name__ == "__main__":
-    main()
+def make_ppo_vec(env_name, device, _):
+    venv = make_vec_env(env_name, device)
+    preset = atari.ppo.env(venv).hyperparameters(
+        n_envs=venv.num_envs,
+        n_steps=64,
+        minibatches=2,
+        epochs=4,
+        feature_model_constructor=impala_features,
+        value_model_constructor=impala_value_head,
+        entropy_loss_scaling=0.001,
+        value_loss_scaling=0.1,
+        clip_initial=0.5,
+        clip_final=0.05,
+    ).build()
+    experiment = ParallelEnvExperiment(preset, venv)
+    return experiment, preset, venv

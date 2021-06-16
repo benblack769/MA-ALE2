@@ -7,11 +7,15 @@ import os
 import torch
 from shared_rainbow import make_rainbow_preset
 from independent_rainbow import make_indepedent_rainbow
+from shared_ppo import make_ppo_vec
 
 trainer_types = {
     "shared_rainbow": make_rainbow_preset,
     "independent_rainbow": make_indepedent_rainbow,
+    "shared_ppo": make_ppo_vec,
 }
+
+
 
 def main():
     parser = argparse.ArgumentParser(description="Run an multiagent Atari benchmark.")
@@ -34,13 +38,8 @@ def main():
     args = parser.parse_args()
     experiment_name = f"{args.trainer_type}_{args.env}_RB{args.replay_buffer_size}_F{args.frames}"
 
-    preset, env = trainer_types[args.trainer_type](args.env, args.device, args.replay_buffer_size)
+    experiment, preset, env = trainer_types[args.trainer_type](args.env, args.device, args.replay_buffer_size)
 
-    experiment = MultiagentEnvExperiment(
-        preset,
-        env,
-        write_loss=False,
-    )
     # run_experiment()
     save_folder = f"checkpoint/{experiment_name}"
     os.makedirs(save_folder)

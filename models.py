@@ -194,13 +194,21 @@ class impala_rnn_features(nn.Module):
 # out = net(torch.ones((2,7,84,84),device="cuda"))
 
 # print(out.shape)
-def imala_features(env, length=4, channels=1):
+def impala_features(length=4, channels=4):
     return nn.Sequential(
-        impala_rnn_features(env, length=length, channels=channels),
+        impala_rnn_features(None, length=length, channels=channels),
         nn.ReLU(),
         nn.Linear(256, 256),
         nn.ReLU()
     )
+
+
+def impala_value_head():
+    return nn.Linear(256, 1)
+
+
+def impala_policy_head(env):
+    return nn.Linear0(256, env.action_space.n)
 
 
 def impala_rainbow(env,frames=None, length=4, channels=4, hidden=512, atoms=51, sigma=0.5):

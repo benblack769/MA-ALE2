@@ -202,4 +202,9 @@ def make_rainbow_preset(env_name, device, replay_buffer_size):
         )
     ).build()
 
-    return preset, multi_agent_env
+    experiment = MultiagentEnvExperiment(
+        preset,
+        env,
+        write_loss=False,
+    )
+    return experiment, preset, multi_agent_env

@@ -173,4 +173,10 @@ def make_indepedent_rainbow(env_name, device, replay_buffer_size):
             for agent in env.agents
     }
     preset = IndependentMultiagentPreset("atari_experiment", env, presets)
-    return preset, env
+
+    experiment = MultiagentEnvExperiment(
+        preset,
+        env,
+        write_loss=False,
+    )
+    return experiment, preset, env
