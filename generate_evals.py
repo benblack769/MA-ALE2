@@ -14,11 +14,11 @@ experiment_configs = [
     ("independent_rainbow", 100000),
 ]
 
-num_frames_train = 10000000
+num_frames_train = 5000000
 frames_per_save = num_frames_train//100
 
-eval_frames = 2500
-base_folder = "/home/ben/job_data/experiment_runs.sh.1/checkpoint"
+eval_frames = 125000
+base_folder = "experiments/impalanet_rainbow_experiments"
 
 def make_name(trainer, env, buf_size):
     return f"{trainer}_{env}_RB{buf_size}_F{num_frames_train}"
@@ -34,10 +34,10 @@ for env in all_environments:
                 # if vs_random:
                 #     for agent in agent_list:
                 #         frames = eval_frames
-                #         print(f"workon main_env && python experiment_eval.py {env} {checkpoint:08d} {checkpoint_folder} --frames={frames} --agent={agent} {vs_random}")
+                #         print(f"workon main_env && python experiment_eval.py {env} {checkpoint:09d} {checkpoint_folder} --frames={frames} --agent={agent} {vs_random}")
                 # else:
                 agent = "first_0"
                 frames = eval_frames
-                print(f"execute_remote --copy-forward *.py {checkpoint_folder}/{checkpoint:08d}.pt --copy-backwards out.txt --verbose 'workon main_env && python experiment_eval.py {env} {checkpoint:08d} {checkpoint_folder} --frames={frames} --agent={agent} {vs_random}'")
+                print(f"execute_remote --copy-forward *.py {checkpoint_folder}/{checkpoint:09d}.pt --copy-backwards out.txt --verbose 'workon main_env && python experiment_eval.py {env} {checkpoint:09d} {checkpoint_folder} --frames={frames} --agent={agent} {vs_random}'")
     # frames = eval_frames*4
     # print(f"workon main_env && python experiment_eval.py {env} {frames_per_save} ~/job_results/ --frames={frames} --agent={agent} --vs-random --agent-random")

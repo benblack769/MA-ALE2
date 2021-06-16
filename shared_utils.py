@@ -40,10 +40,10 @@ class IndicatorState(State):
             obs = dict.__getitem__(self, key)
             if not torch.is_tensor(obs):
                 obs = [self.append_agent_to_obs(o) for o in obs]
-                obs = torch.cat(obs, dim=0)
             else:
-                assert False
+                obs = [self.append_agent_to_obs(o.unsqueeze(0)) for o in obs]
 
+            obs = torch.cat(obs, dim=0)
             return obs#torch.cat([obs, indicator], dim=0)
         return super().__getitem__(key)
 
