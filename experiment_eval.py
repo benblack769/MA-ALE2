@@ -2,6 +2,7 @@ import argparse
 from all.presets import atari
 from timeit import default_timer as timer
 import torch
+torch.set_num_threads(1)
 import os
 import numpy as np
 import random
@@ -121,7 +122,7 @@ def main():
     env = make_env(args.env)
     env = MultiagentPettingZooEnv(env, args.env, device=args.device)
 
-    preset = torch.load(checkpoint_path)
+    preset = torch.load(checkpoint_path, map_location=args.device)
     agent = preset.test_agent()
     if args.vs_random:
         for a in env._env.possible_agents:
