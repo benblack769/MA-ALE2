@@ -8,17 +8,17 @@ four_p_envs = {
 }
 
 experiment_configs = [
-    ("shared_rainbow", 1000000),
-    ("shared_rainbow", 100000),
-    ("independent_rainbow", 1000000),
-    ("independent_rainbow", 100000),
+    ("shared_ppo", 1000000),
+    # ("shared_rainbow", 100000),
+    # ("independent_rainbow", 1000000),
+    # ("independent_rainbow", 100000),
 ]
 
-num_frames_train = 5000000
+num_frames_train = 20000000
 frames_per_save = num_frames_train//100
 
 eval_frames = 125000
-base_folder = "experiments/impalanet_rainbow_experiments"
+base_folder = "experiments/ppo_long"
 
 def make_name(trainer, env, buf_size):
     return f"{trainer}_{env}_RB{buf_size}_F{num_frames_train}"

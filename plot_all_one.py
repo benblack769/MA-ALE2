@@ -108,10 +108,10 @@ def main():
         print("plotted")
         df = csv_data[(csv_data['experiment'] == env)]
         plt.subplot(8,3,plot_ind)
-        rand_reward = random_data[(random_data['game'] == get_env_name(env))].iloc[0]['agent2_rew']
+        rand_reward = random_data[(random_data['game'] == get_env_name(env))].iloc[0]['agent1_rew']
         print(rand_reward)
         #df = pd.read_csv(os.path.join(data_path, env+'.csv'))
-        df = df[['checkpoint', "agent2_rew"]]
+        df = df[['checkpoint', "agent1_rew"]]
         data = df.to_numpy()
         #filtered = scipy.signal.savgol_filter(data[:, 1], int(len(data[:, 1])/110)+2, 5)
         filtered = data[:,1]

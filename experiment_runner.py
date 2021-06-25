@@ -8,6 +8,9 @@ import torch
 from shared_rainbow import make_rainbow_preset
 from independent_rainbow import make_indepedent_rainbow
 from shared_ppo import make_ppo_vec
+import numpy as np
+import random
+
 
 trainer_types = {
     "shared_rainbow": make_rainbow_preset,
@@ -35,7 +38,16 @@ def main():
     parser.add_argument(
         "--frames", type=int, default=50e6, help="The number of training frames."
     )
+    parser.add_argument(
+        "--experiment-seed", type=int, default=0, help="The unique id of the experiment run (for running multiple experiments)."
+    )
+
     args = parser.parse_args()
+
+    np.random.seed(args.experiment_seed)
+    random.seed(args.experiment_seed)
+    torch.manual_seed(args.experiment_seed)
+
     experiment_name = f"{args.trainer_type}_{args.env}_RB{args.replay_buffer_size}_F{args.frames}"
 
     experiment, preset, env = trainer_types[args.trainer_type](args.env, args.device, args.replay_buffer_size)

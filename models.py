@@ -166,9 +166,18 @@ class impala_rnn_features(nn.Module):
         super().__init__()
         self.length = length
         self.channels = channels
-        self.out_size = 2304
+        self.out_size = 3136
         self.lstm_size = 256
-        self.cnn_encoder = impala_cnn_features(env, channels)
+        self.cnn_encoder = nn.Sequential(
+            nn.Scale(1 / 255),
+            nn.Conv2d(channels, 32, 8, stride=4),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, 4, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, 3, stride=1),
+            nn.Flatten(),
+        )
+        # impala_cnn_features(env, channels)
         self.initial_cell = nn.parameter.Parameter(torch.zeros((1,1,self.lstm_size)), requires_grad=True)
         self.initial_hidden = nn.parameter.Parameter(torch.zeros((1,1,self.lstm_size)), requires_grad=True)
         self.rnn = nn.LSTM(self.out_size, self.lstm_size, 1)

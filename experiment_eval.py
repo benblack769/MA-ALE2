@@ -9,12 +9,19 @@ import random
 import subprocess
 import shutil
 from PIL import Image
-from env_utils import make_env
+from env_utils import make_env, InvertColorAgentIndicator
 from all.environments import MultiagentPettingZooEnv
 
 from shared_rainbow import make_rainbow_preset
 from independent_rainbow import make_indepedent_rainbow
+from shared_ppo import make_ppo_vec
 
+
+trainer_types = {
+    "shared_rainbow": make_rainbow_preset,
+    "independent_rainbow": make_indepedent_rainbow,
+    "shared_ppo": make_ppo_vec,
+}
 
 class TestRandom:
     def __init__(self):
@@ -84,6 +91,20 @@ def returns_agent(returns, agent):
     agent_1_returns = [ret[agent] for ret in returns]
     return np.mean(agent_1_returns)
 
+
+from all.agents import Agent
+from all.logging import DummyWriter
+from all.presets import IndependentMultiagentPreset, Preset
+from all.core import State
+import torch
+
+class SingleEnvAgent(Agent):
+    def __init__(self, agent):
+        self.agent = agent
+
+    def act(self, state):
+        return self.agent.act(State.array([state]))
+
 def main():
     parser = argparse.ArgumentParser(description="Run an multiagent Atari benchmark.")
     parser.add_argument("env", help="Name of the Atari game (e.g. Pong).")
@@ -115,21 +136,42 @@ def main():
     )
     args = parser.parse_args()
 
+
     checkpoint_path = os.path.join(args.folder,f"{args.checkpoint}.pt")
     print(checkpoint_path)
     frame_skip = 1 if args.generate_gif else 4
 
-    env = make_env(args.env)
-    env = MultiagentPettingZooEnv(env, args.env, device=args.device)
-
     preset = torch.load(checkpoint_path, map_location=args.device)
-    agent = preset.test_agent()
+
+    try:
+        agent = preset.test_agent()
+        env = make_env(args.env)
+        env = MultiagentPettingZooEnv(env, args.env, device=args.device)
+        state = env.reset()
+        agent.act(state)
+    except RuntimeError:
+        env = make_env(args.env)
+        agent = SingleEnvAgent(preset.test_agent())
+        from all.agents.independent import IndependentMultiagent
+        agent = IndependentMultiagent({
+            agent_id : agent
+            for agent_id in env.possible_agents
+        })
+        env = InvertColorAgentIndicator(env)
+        print(env.observation_spaces)
+        env = MultiagentPettingZooEnv(env, args.env, device=args.device)
+        state = env.reset()
+        print(state.observation.shape)
+        agent.act(state)
+
+
     if args.vs_random:
         for a in env._env.possible_agents:
             if a != args.agent:
                 agent.agents[a] = TestRandom()
     if args.agent_random:
         agent.agents[args.agent] = TestRandom()
+
 
     if not args.generate_gif:
         returns = test_independent(env, agent, args.frames)
