@@ -95,7 +95,7 @@ def main():
     csv_data = pandas.read_csv(csv_name)
     random_data = pandas.read_csv("rand_data.csv")
     random_data = random_data[random_data['vs_random'] & random_data['agent_random']]
-    csv_data = csv_data[(csv_data['agent'] == "first_0") & csv_data['vs_random'] & ~csv_data['agent_random']]
+    csv_data = csv_data[(csv_data['agent'] == "first_0") & ~csv_data['vs_random'] & ~csv_data['agent_random']]
     #print(data)
     all_envs = sorted(set(csv_data['experiment']))
     print(all_envs)
