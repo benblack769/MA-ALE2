@@ -25,8 +25,10 @@ class IndicatorState(State):
                 rotated_obs = 255 - obs
             else:
                 rotated_obs = obs
-        elif max_num_agents == 4:
+        elif self.num_agents == 4:
             rotated_obs = (255*self.agent_idx)//4 + obs
+        else:
+            assert False
 
         indicator = torch.zeros((2, )+obs.shape[1:],dtype=torch.uint8,device=obs.device)
         indicator[0] = 255 * self.agent_idx % 2
@@ -39,11 +41,10 @@ class IndicatorState(State):
         if key == 'observation':
             obs = dict.__getitem__(self, key)
             if not torch.is_tensor(obs):
-                obs = [self.append_agent_to_obs(o) for o in obs]
+                obs = self.append_agent_to_obs(torch.cat([o for o in obs],dim=0))
             else:
-                obs = [self.append_agent_to_obs(o.unsqueeze(0)) for o in obs]
+                obs = self.append_agent_to_obs(torch.cat([o.unsqueeze(0) for o in obs],dim=0))
 
-            obs = torch.cat(obs, dim=0)
             return obs#torch.cat([obs, indicator], dim=0)
         return super().__getitem__(key)
 

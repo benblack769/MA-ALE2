@@ -1,4 +1,3 @@
-from supersuit.aec_wrappers import ObservationWrapper
 from pettingzoo import atari
 import importlib
 import numpy as np

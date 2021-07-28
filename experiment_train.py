@@ -7,6 +7,7 @@ import os
 import torch
 from shared_rainbow import make_rainbow_preset
 from independent_rainbow import make_indepedent_rainbow
+from ppo_ram import make_ppo_ram_vec
 from shared_ppo import make_ppo_vec
 import numpy as np
 import random
@@ -16,6 +17,7 @@ trainer_types = {
     "shared_rainbow": make_rainbow_preset,
     "independent_rainbow": make_indepedent_rainbow,
     "shared_ppo": make_ppo_vec,
+    "shared_ppo_ram": make_ppo_ram_vec
 }
 
 
@@ -48,10 +50,10 @@ def main():
     random.seed(args.experiment_seed)
     torch.manual_seed(args.experiment_seed)
 
-    experiment_name = f"{args.trainer_type}_{args.env}_RB{args.replay_buffer_size}_F{args.frames}"
+    experiment_name = f"{args.trainer_type}_{args.env}_RB{args.replay_buffer_size}_F{args.frames}_S{args.experiment_seed}"
 
     experiment, preset, env = trainer_types[args.trainer_type](args.env, args.device, args.replay_buffer_size)
-
+    env.seed(args.experiment_seed)
     # run_experiment()
     save_folder = f"checkpoint/{experiment_name}"
     os.makedirs(save_folder)

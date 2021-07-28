@@ -88,7 +88,7 @@ class RainbowAtariPreset(Preset):
     def __init__(self, env, name, device="cuda", **hyperparameters):
         hyperparameters = {**default_hyperparameters, **hyperparameters}
         super().__init__(env, name, hyperparameters)
-        self.model = hyperparameters['model_constructor'](env, frames=8, atoms=hyperparameters["atoms"], sigma=hyperparameters["sigma"]).to(device)
+        self.model = hyperparameters['model_constructor'](env, frames=10, atoms=hyperparameters["atoms"], sigma=hyperparameters["sigma"]).to(device)
         self.hyperparameters = hyperparameters
         self.n_actions = env.action_space.n
         self.device = device
@@ -177,12 +177,17 @@ class RainbowAtariPreset(Preset):
                     len(self.agent_names)
                 )
             )
+
         return IndependentMultiagent({
             agent_id : make_agent(agent_id)
             for agent_id in self.agent_names
         })
 
 rainbow = PresetBuilder('rainbow', default_hyperparameters, RainbowAtariPreset)
+
+
+def nat_features(env, frames=4, **kwargs):
+    return nature_features(env, frames=10)
 
 
 def make_rainbow_preset(env_name, device, replay_buffer_size):
@@ -196,7 +201,7 @@ def make_rainbow_preset(env_name, device, replay_buffer_size):
         assert act_space == env.action_spaces[agent]
     env_agents = env.possible_agents
     multi_agent_env = MultiagentPettingZooEnv(env, env_name, device=device)
-    preset = rainbow.env(multi_agent_env).hyperparameters(replay_buffer_size=replay_buffer_size,model_constructor=impala_rainbow).device(device).env(
+    preset = rainbow.env(multi_agent_env).hyperparameters(replay_buffer_size=replay_buffer_size).device(device).env(
         DummyEnv(
             obs_space, act_space, env_agents
         )
@@ -204,7 +209,7 @@ def make_rainbow_preset(env_name, device, replay_buffer_size):
 
     experiment = MultiagentEnvExperiment(
         preset,
-        env,
+        multi_agent_env,
         write_loss=False,
     )
     return experiment, preset, multi_agent_env
