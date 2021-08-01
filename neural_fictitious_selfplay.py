@@ -125,6 +125,7 @@ def make_obs_batch_from_env(observations, rewards, dones, device):
         "mask": torch_mask,
     })
 
+
 def env_loop(env_name, num_steps, num_envs, device="cpu"):
     base_env = make_env(env_name)
     v_env, agent_names = make_vec_env(base_env, num_envs, num_cpus=4)
@@ -139,7 +140,9 @@ def env_loop(env_name, num_steps, num_envs, device="cpu"):
         actions = agents.act(batched_data)
         observations, rewards, dones, infos = v_env.step(actions)
 
-env_loop("space_invaders_v1",100,4)
+
+# env_loop("space_invaders_v1",100,4)
+
 
 def rl_model(frames=4, hidden=512, atoms=51, sigma=0.5):
     return nn.Sequential(
@@ -208,6 +211,7 @@ class RLAgent:
 
     def act(self, obs_batch):
         pass
+
 
 class SLAgent:
     def __init__(self, batch_size):
