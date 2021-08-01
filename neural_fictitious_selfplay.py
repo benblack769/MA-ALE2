@@ -7,6 +7,8 @@ from tianshou.data import Batch
 import reverb
 import multiprocessing
 import importlib
+import psutil
+import atexit
 import numpy as np
 
 def start_server(max_size, agents):
@@ -31,7 +33,15 @@ def start_server(max_size, agents):
 
 
 def run_server(max_size, agents):
-    proc = multiprocessing.Process(target=start_server, args=(max_size, agents))
+    return multiprocessing.Process(target=start_server, args=(max_size, agents))
+
+def cleaup_processes():
+    current_process = psutil.Process()
+    children = current_process.children(recursive=True)
+    for child in children:
+        child.terminate()
+
+atexit.register(cleaup_processes)
 
 
 def add_element(traj_writer, agent, obs, action, reward, done):
@@ -129,7 +139,7 @@ def env_loop(env_name, num_steps, num_envs, device="cpu"):
         actions = agents.act(batched_data)
         observations, rewards, dones, infos = v_env.step(actions)
 
-env_loop("space_invaders_v1",1000,4)
+env_loop("space_invaders_v1",100,4)
 
 def rl_model(frames=4, hidden=512, atoms=51, sigma=0.5):
     return nn.Sequential(
