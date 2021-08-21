@@ -15,7 +15,7 @@ def make_env(env_name):
     return env
 
 def InvertColorAgentIndicator(env):
-    def modify_obs(obs, agent):
+    def modify_obs(obs, obs_space, agent):
         num_agents = len(env.possible_agents)
         agent_idx = env.possible_agents.index(agent)
         if num_agents == 2:

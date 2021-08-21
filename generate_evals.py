@@ -8,7 +8,7 @@ four_p_envs = {
 }
 
 experiment_configs = [
-    ("shared_ppo_ram", 1000000),
+    ("shared_rainbow", 1000000),
     # ("shared_rainbow", 100000),
     # ("independent_rainbow", 1000000),
     # ("independent_rainbow", 100000),
@@ -18,7 +18,7 @@ num_frames_train = 50000000
 frames_per_save = num_frames_train//100
 
 eval_frames = 125000
-base_folder = "experiments/vqn_long"
+base_folder = "experiments/rainbow_train"
 
 num_experiments = 1
 

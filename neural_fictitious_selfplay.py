@@ -196,8 +196,8 @@ def sl_model(frames=4):
 
 
 class RLAgent:
-    def __init__(self, batch_size):
-        self.model = rl_model()
+    def __init__(self, q_model, batch_size):
+        self.model = q_model
         self.batch_size = batch_size
         buf_size = 500000
         img_shape = (4, 84, 84)
@@ -207,7 +207,7 @@ class RLAgent:
             "reward": torch.zeros((buf_size,),device=store_device),
             "action": torch.zeros((buf_size,),dtype=torch.int64),
         })
-        self.queue_buffer = QueueBuffer(buf, 500000)
+        
 
     def act(self, obs_batch):
         pass

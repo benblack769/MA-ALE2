@@ -14,10 +14,16 @@ from env_utils import InvertColorAgentIndicator
 from all.bodies import DeepmindAtariBody
 
 def make_vec_env(env_name, device):
-    env = make_env(env_name)
-    env = ss.black_death_v1(env)
+    import importlib
+    env = importlib.import_module('pettingzoo.atari.{}'.format(env_name)).parallel_env(obs_type='grayscale_image')
+    env = ss.max_observation_v0(env, 2)
+    env = ss.frame_skip_v0(env, 4)
+    # env = InvertColorAgentIndicator(env) # handled by body
+    env = ss.resize_v0(env, 84, 84)
+    env = ss.reshape_v0(env, (1, 84, 84))
+    env = ss.black_death_v2(env)
     env = InvertColorAgentIndicator(env)
-    env = to_parallel(env)
+    # env = to_parallel(env)
     env = ss.pettingzoo_env_to_vec_env_v0(env)
     env = ss.concat_vec_envs_v0(env, 32, num_cpus=8, base_class='stable_baselines3')
     env = GymVectorEnvironment(env, "env_name", device=device)
@@ -43,9 +49,9 @@ def make_ppo_vec(env_name, device, _):
         clip_initial=0.5,
         clip_final=0.05,
     ).build()
-    base_agent = preset.agent.agent.agent
-    preset = DeepmindAtariBody(base_agent, lazy_frames=True, episodic_lives=False, clip_rewards=True,)
-    print(base_agent)
+    # base_agent = preset.agent.agent.agent
+    # preset = DeepmindAtariBody(base_agent, lazy_frames=True, episodic_lives=False, clip_rewards=True,)
+    # print(base_agent)
 
     experiment = ParallelEnvExperiment(preset, venv)
     return experiment, preset, venv
