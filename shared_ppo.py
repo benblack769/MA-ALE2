@@ -12,6 +12,9 @@ from pettingzoo.utils import to_parallel
 from models import impala_features, impala_value_head, impala_policy_head, nature_features
 from env_utils import InvertColorAgentIndicator
 from all.bodies import DeepmindAtariBody
+from nfsp_models import ImpalaCNNLarge
+from all import nn
+
 
 def make_vec_env(env_name, device):
     import importlib
@@ -44,6 +47,43 @@ def make_ppo_vec(env_name, device, _):
         feature_model_constructor=nat_features,
         # value_model_constructor=impala_value_head,
         # policy_model_constructor=impala_policy_head,
+        entropy_loss_scaling=0.001,
+        value_loss_scaling=0.1,
+        clip_initial=0.5,
+        clip_final=0.05,
+    ).build()
+    # base_agent = preset.agent.agent.agent
+    # preset = DeepmindAtariBody(base_agent, lazy_frames=True, episodic_lives=False, clip_rewards=True,)
+    # print(base_agent)
+
+    experiment = ParallelEnvExperiment(preset, venv)
+    return experiment, preset, venv
+
+
+def impala_value_head():
+    return nn.Linear(256, 1)
+
+
+def impala_policy_head(env):
+    return nn.Linear0(256, env.action_space.n)
+
+
+def largenet():
+    largenet = ImpalaCNNLarge(16, 18, nn.Linear, (84, 84), model_size=2)
+    return largenet
+
+
+def make_ppo_vec_largenet(env_name, device, _):
+    venv = make_vec_env(env_name, device)
+    n_steps = (256*32*2) // venv.num_envs
+    preset = atari.ppo.env(venv).device(device).hyperparameters(
+        n_envs=venv.num_envs,
+        n_steps=n_steps,
+        minibatches=32,
+        epochs=4,
+        feature_model_constructor=largenet,
+        value_model_constructor=impala_value_head,
+        policy_model_constructor=impala_policy_head,
         entropy_loss_scaling=0.001,
         value_loss_scaling=0.1,
         clip_initial=0.5,

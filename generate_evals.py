@@ -41,6 +41,6 @@ for env in all_environments:
                     # else:
                     agent = "first_0"
                     frames = eval_frames
-                    print(f"execute_remote --copy-forward *.py {checkpoint_folder}/{checkpoint:09d}.pt --copy-backwards out.txt --verbose 'workon main_env && python experiment_eval.py {env} {checkpoint:09d} {checkpoint_folder} --frames={frames} --agent={agent} {vs_random}'")
+                    print(f"execute_remote --copy-forward *.py {checkpoint_folder}/{checkpoint:09d}.pt --copy-backwards out.txt --verbose '. /opt/conda/etc/profile.d/conda.sh && conda activate && python experiment_eval.py {env} {checkpoint:09d} {checkpoint_folder} --frames={frames} --agent={agent} {vs_random}'")
         # frames = eval_frames*4
         # print(f"workon main_env && python experiment_eval.py {env} {frames_per_save} ~/job_results/ --frames={frames} --agent={agent} --vs-random --agent-random")

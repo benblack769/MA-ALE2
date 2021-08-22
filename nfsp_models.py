@@ -5,6 +5,7 @@ import torch
 from torch import nn as nn, Tensor
 from torch.nn import init
 import torch.nn.functional as F
+import numpy as np
 
 class Dueling(nn.Module):
     """ The dueling branch used in all nets that use dueling-dqn. """
@@ -75,25 +76,37 @@ class ImpalaCNNLarge(nn.Module):
             ImpalaCNNBlock(in_depth, 16*model_size, norm_func=identity),
             ImpalaCNNBlock(16*model_size, 32*model_size, norm_func=identity),
             ImpalaCNNBlock(32*model_size, 32*model_size, norm_func=norm_func),
-            nn.ReLU()
+            nn.ReLU(),
+            nn.Flatten(),
         )
 
         shape = self.main(torch.zeros(1, in_depth, resolution[0], resolution[1])).shape
         assert shape[0] == 1
-        assert shape[1] == 32*model_size
-
-        self.dueling = Dueling(
-            nn.Sequential(linear_layer(shape[2]*shape[3]*32*model_size, 256),
-                          nn.ReLU(),
-                          linear_layer(256, 1)),
-            nn.Sequential(linear_layer(shape[2]*shape[3]*32*model_size, 256),
-                          nn.ReLU(),
-                          linear_layer(256, actions))
-        )
+        self.linear = linear_layer(shape[1], 256)
+        # print(shape[1])
+        # print(model_size)
+        # assert shape[1] == 32*np.prod(model_size)
+        #
+        # self.dueling = Dueling(
+        #     nn.Sequential(linear_layer(shape[2]*shape[3]*32*model_size, 256),
+        #                   nn.ReLU(),
+        #                   linear_layer(256, 1)),
+        #     nn.Sequential(linear_layer(shape[2]*shape[3]*32*model_size, 256),
+        #                   nn.ReLU(),
+        #                   linear_layer(256, actions))
+        # )
 
     def forward(self, x, advantages_only=False):
         f = self.main(x)
-        return self.dueling(f, advantages_only=advantages_only)
+        l = self.linear(f)
+        # print(f.shape)
+        return torch.relu(l)
+        # return self.dueling(f, advantages_only=advantages_only)
 
-linear_layer = nn.Linear
-largenet = ImpalaCNNLarge(4, 18, linear_layer, (84, 84), model_size=2)
+
+if __name__ == "__main__":
+    # test out net to make sure it at least can be created
+    largenet = ImpalaCNNLarge(4, 18, nn.Linear, (84, 84), model_size=2)
+    out = largenet(torch.zeros(2,4,84,84))
+    print(out)
+    print(out.shape)
