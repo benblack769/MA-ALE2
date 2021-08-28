@@ -111,7 +111,7 @@ def exec_env(input):
         # "all_mean_rewards":total_reward.total()/ num_steps,
         # "all_mean_abs_rewards":abs_reward.total()/ num_steps,
         # "all_prop_non_zero":non_zero_rewards.total()/ num_steps,
-        "mean_rewards":compute(total_reward.summarize(), num_steps),
+        "mean_rewards":compute(total_reward.summarize(), num_episodes),
         # "mean_abs_rewards":compute(abs_reward.summarize(), num_steps),
         # "prop_non_zero":compute(non_zero_rewards.summarize(), num_steps),
         # "mean_rewards_full":compute(total_reward.get(), num_steps),

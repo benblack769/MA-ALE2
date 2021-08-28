@@ -7,6 +7,7 @@ import os
 import scipy
 from scipy import signal
 import sys
+import json
 
 from all_envs import all_environments
 
@@ -111,25 +112,20 @@ def main():
     # print(accumed['agent1_rew']['mean'])
     # print(accumed)
     # return
-    random_data = pandas.read_csv("plot_data/rand_data.csv")
-    random_data = random_data[random_data['vs_random'] & random_data['agent_random']]
+    # random rewards gleaned with ale_rand_test.py
+    random_data = json.load(open("plot_data/rand_rewards.json"))
     csv_data = accumed[(csv_data['agent'] == "first_0") & csv_data['vs_random'] & ~csv_data['agent_random']]
     #print(data)
     all_envs = sorted(set(csv_data['no_seed_experiment']))
-    print(all_envs)
 
     all_env_map = {get_env_name(env): env for env in all_envs}
     all_envs = sorted(all_env_map.keys(), key=str.lower)
 
     plot_ind = 1
     for env in all_envs:
-        print("plotted")
         df = csv_data[(csv_data['no_seed_experiment'] == all_env_map[env])]
         plt.subplot(8,3,plot_ind)
-        print(random_data['game'])
-        print(env)
-        rand_reward = random_data[(random_data['game'] == env)].iloc[0]['agent1_rew']
-        print(rand_reward)
+        rand_reward = random_data[env]['mean_rewards']['first']
         #df = pd.read_csv(os.path.join(data_path, env+'.csv'))
         df = df[['checkpoint', "agent1_rew"]]
         data = df.to_numpy()
@@ -151,8 +147,8 @@ def main():
 
 
     plt.figlegend([line,rand_line],['Trained Agent vs Random Agent', "Random Agent vs Random Agent"], fontsize='x-large', loc='lower center', ncol=1, labelspacing=.2, columnspacing=.25, borderpad=.25, bbox_to_anchor=(0.68,0.06))
-    plt.savefig("atari_results.pgf", bbox_inches = 'tight',pad_inches = .025)
-    plt.savefig("atari_results.png", bbox_inches = 'tight',pad_inches = .025, dpi=600)
+    plt.savefig(f"{csv_name}.pgf", bbox_inches = 'tight',pad_inches = .025)
+    plt.savefig(f"{csv_name}.png", bbox_inches = 'tight',pad_inches = .025, dpi=600)
 
 if __name__ == "__main__":
     main()
