@@ -75,9 +75,10 @@ def get_exp_label(exp):
 
 def main():
 
-    assert len(sys.argv) == 2
+    assert len(sys.argv) == 2, "must supply name of csv file as argument"
 
     csv_name = sys.argv[1]
+
 
     matplotlib.use("pgf")
     plt.rcParams.update({
@@ -93,22 +94,41 @@ def main():
     plt.figure(figsize=(2.65*3*1.0, 1.5*7*1.0))
 
     csv_data = pandas.read_csv(csv_name)
-    random_data = pandas.read_csv("rand_data.csv")
+    csv_data['no_seed_experiment'] = [s.rsplit('_', 1)[0] for s in csv_data['experiment']]
+    grouped = csv_data.groupby([
+        'no_seed_experiment',
+        'checkpoint',
+        'agent',
+        'vs_random'
+    ])
+    accumed = grouped.agg({
+        'agent1_rew': ['mean', 'min', 'max'],
+        'agent2_rew': ['mean', 'min', 'max'],
+        'agent3_rew': ['mean', 'min', 'max'],
+        'agent4_rew': ['mean', 'min', 'max'],
+    })
+    accumed.reset_index(inplace=True)
+    # print(accumed['agent1_rew']['mean'])
+    # print(accumed)
+    # return
+    random_data = pandas.read_csv("plot_data/rand_data.csv")
     random_data = random_data[random_data['vs_random'] & random_data['agent_random']]
-    csv_data = csv_data[(csv_data['agent'] == "first_0") & ~csv_data['vs_random'] & ~csv_data['agent_random']]
+    csv_data = accumed[(csv_data['agent'] == "first_0") & csv_data['vs_random'] & ~csv_data['agent_random']]
     #print(data)
-    all_envs = sorted(set(csv_data['experiment']))
+    all_envs = sorted(set(csv_data['no_seed_experiment']))
     print(all_envs)
 
-    # all_env_names = {env: get_env_name(env) for env in all_envs}
-    # all_envs = sorted(all_envs, key=str.lower)
+    all_env_map = {get_env_name(env): env for env in all_envs}
+    all_envs = sorted(all_env_map.keys(), key=str.lower)
 
     plot_ind = 1
     for env in all_envs:
         print("plotted")
-        df = csv_data[(csv_data['experiment'] == env)]
+        df = csv_data[(csv_data['no_seed_experiment'] == all_env_map[env])]
         plt.subplot(8,3,plot_ind)
-        rand_reward = random_data[(random_data['game'] == get_env_name(env))].iloc[0]['agent1_rew']
+        print(random_data['game'])
+        print(env)
+        rand_reward = random_data[(random_data['game'] == env)].iloc[0]['agent1_rew']
         print(rand_reward)
         #df = pd.read_csv(os.path.join(data_path, env+'.csv'))
         df = df[['checkpoint', "agent1_rew"]]

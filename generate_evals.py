@@ -8,17 +8,15 @@ four_p_envs = {
 }
 
 experiment_configs = [
-    ("shared_rainbow", 1000000),
-    # ("shared_rainbow", 100000),
-    # ("independent_rainbow", 1000000),
-    # ("independent_rainbow", 100000),
+    # ("shared_rainbow", 1000000),
+    ("shared_ppo", 1),
 ]
 
 num_frames_train = 50000000
 frames_per_save = num_frames_train//100
 
 eval_frames = 125000
-base_folder = "experiments/rainbow_train"
+base_folder = "experiments/ppo_train"
 
 num_experiments = 1
 

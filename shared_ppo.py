@@ -75,12 +75,12 @@ def largenet():
 
 def make_ppo_vec_largenet(env_name, device, _):
     venv = make_vec_env(env_name, device)
-    n_steps = (256*32*2) // venv.num_envs
+    n_steps = (128*32*2) // venv.num_envs
     preset = atari.ppo.env(venv).device(device).hyperparameters(
         n_envs=venv.num_envs,
         n_steps=n_steps,
         minibatches=32,
-        epochs=4,
+        epochs=2,
         feature_model_constructor=largenet,
         value_model_constructor=impala_value_head,
         policy_model_constructor=impala_policy_head,
