@@ -96,6 +96,12 @@ def main():
 
     csv_data = pandas.read_csv(csv_name)
     csv_data['no_seed_experiment'] = [s.rsplit('_', 1)[0] for s in csv_data['experiment']]
+    print(len(csv_data['no_seed_experiment']))
+    print(len(set(csv_data['no_seed_experiment'])))
+    print(len(set(csv_data['checkpoint'])))
+    print(len(set(csv_data['agent'])))
+    print(len(set(csv_data['vs_random'])))
+    del csv_data['experiment']
     grouped = csv_data.groupby([
         'no_seed_experiment',
         'checkpoint',
@@ -108,13 +114,17 @@ def main():
         'agent3_rew': ['mean', 'min', 'max'],
         'agent4_rew': ['mean', 'min', 'max'],
     })
+    print(accumed)
     accumed.reset_index(inplace=True)
+    print(len(csv_data['agent1_rew']))
+    print(len(accumed['agent1_rew']['mean']))
+    return
     # print(accumed['agent1_rew']['mean'])
     # print(accumed)
     # return
     # random rewards gleaned with ale_rand_test.py
     random_data = json.load(open("plot_data/rand_rewards.json"))
-    csv_data = accumed[(csv_data['agent'] == "first_0") & csv_data['vs_random'] & ~csv_data['agent_random']]
+    csv_data = accumed#[(accumed['agent'] == "first_0")]
     #print(data)
     all_envs = sorted(set(csv_data['no_seed_experiment']))
 
@@ -125,14 +135,20 @@ def main():
     for env in all_envs:
         df = csv_data[(csv_data['no_seed_experiment'] == all_env_map[env])]
         plt.subplot(8,3,plot_ind)
+        ax = plt.gca()
         rand_reward = random_data[env]['mean_rewards']['first']
         #df = pd.read_csv(os.path.join(data_path, env+'.csv'))
-        df = df[['checkpoint', "agent1_rew"]]
-        data = df.to_numpy()
+        # data = df.to_numpy()
         #filtered = scipy.signal.savgol_filter(data[:, 1], int(len(data[:, 1])/110)+2, 5)
-        filtered = data[:,1]
-        line, = plt.plot(data[:, 0], filtered, label=env, linewidth=0.6, color='#0530ad', linestyle='-')
-        rand_line, = plt.plot(data[:, 0],rand_reward*np.ones_like(data[:, 0]), label=env, linewidth=0.6, color='#A0522D', linestyle='-')
+        x_axis = df['checkpoint'].to_numpy()
+        mean_val = df['agent1_rew']['mean'].to_numpy()
+        max_val = df['agent1_rew']['max'].to_numpy()
+        min_val = df['agent1_rew']['min'].to_numpy()
+        line, = plt.plot(x_axis, mean_val, label=env, linewidth=0.6, color='#0530ad', linestyle='-')
+        # print(mean_val, max_val, min_val)
+        ax.fill_between(x_axis, min_val, max_val, alpha=0.3, facecolor='blue')
+        # plt.set_ylabel('between y1 and 0')
+        rand_line, = plt.plot(x_axis,rand_reward*np.ones_like(x_axis), label=env, linewidth=0.6, color='#A0522D', linestyle='-')
         plt.xlabel('Steps', labelpad=1)
         plt.ylabel('Average Total Reward', labelpad=1)
         plt.title(get_exp_label(env))

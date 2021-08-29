@@ -8,7 +8,7 @@ four_p_envs = {
 }
 
 experiment_configs = [
-    # ("shared_rainbow", 1000000),
+    ("shared_rainbow", 1000000),
     ("shared_ppo", 1),
 ]
 
@@ -18,7 +18,7 @@ frames_per_save = num_frames_train//100
 eval_frames = 125000
 base_folder = "experiments/ppo_train"
 
-num_experiments = 1
+num_experiments = 5
 
 def make_name(trainer, env, buf_size, experiment):
     return f"{trainer}_{env}_RB{buf_size}_F{num_frames_train}_S{experiment}"

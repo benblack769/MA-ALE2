@@ -49,5 +49,5 @@ all_environments = {
     "wizard_of_wor_v2": wizard_of_wor_v2,
     "warlords_v2": warlords_v2,
 }
-for e in all_environments.values():
-    e.env()
+# for e in all_environments.values():
+#     e.env()
