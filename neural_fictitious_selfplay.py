@@ -11,47 +11,56 @@ import psutil
 import atexit
 import numpy as np
 
-def start_server(max_size, agents):
-    all_tables = []
-    for agent in agents:
-        all_tables.append(reverb.Table(
-            name='reservour_buffer_' + agent,
-            sampler=reverb.selectors.Uniform(),
-            remover=reverb.selectors.Uniform(),
-            max_size=max_size,
-            rate_limiter=reverb.rate_limiters.MinSize(1)
-        ))
-        all_tables.append(reverb.Table(
-            name='queue_buffer_' + agent,
-            sampler=reverb.selectors.Uniform(),
-            remover=reverb.selectors.Fifo(),
-            max_size=max_size,
-            rate_limiter=reverb.rate_limiters.MinSize(1)
-        ))
-
-    server = reverb.Server(tables=all_tables, port=8000)
-
-
-def run_server(max_size, agents):
-    return multiprocessing.Process(target=start_server, args=(max_size, agents))
-
-def cleaup_processes():
-    current_process = psutil.Process()
-    children = current_process.children(recursive=True)
-    for child in children:
-        child.terminate()
-
-atexit.register(cleaup_processes)
+# all_tables = []
+#
+# def start_server(max_reservor_size, max_queue_size, agents):
+#     for agent in agents:
+#         all_tables.append(reverb.Table(
+#             name='reservour_buffer_' + agent,
+#             sampler=reverb.selectors.Uniform(),
+#             remover=reverb.selectors.Uniform(),
+#             max_size=max_reservor_size,
+#             rate_limiter=reverb.rate_limiters.MinSize(1)
+#         ))
+#         all_tables.append(reverb.Table(
+#             name='queue_buffer_' + agent,
+#             sampler=reverb.selectors.Uniform(),
+#             remover=reverb.selectors.Fifo(),
+#             max_size=max_queue_size,
+#             rate_limiter=reverb.rate_limiters.MinSize(1)
+#         ))
+#
+#     server = reverb.Server(tables=all_tables, port=8000)
+#     return server
 
 
-def add_element(traj_writer, agent, obs, action, reward, done):
-    writer.create_item(
-      table='my_table',
-      priority=1.0,
-      trajectory={
-          'a': writer.history['a'][:],
-          'b': writer.history['b'][:],
-      })
+# def run_server(max_size, agents):
+#     return multiprocessing.Process(target=start_server, args=(max_size, agents))
+
+# def cleaup_processes():
+#     current_process = psutil.Process()
+#     children = current_process.children(recursive=True)
+#     for child in children:
+#         child.terminate()
+#
+# atexit.register(cleaup_processes)
+#
+# class QueueBufferReverb:
+#     def __init__(self, buffer):
+#         self.name = 'queue_buffer_' + agent
+#
+#     def sample(self, batch_size):
+#         pass
+
+
+# def add_element(traj_writer, agent, obs, action, reward, done):
+#     traj_writer.create_item(
+#       table='my_table',
+#       priority=1.0,
+#       trajectory={
+#           'a': writer.history['a'][:],
+#           'b': writer.history['b'][:],
+#       })
 
 
 def make_env(env_name):
@@ -207,15 +216,16 @@ class RLAgent:
             "reward": torch.zeros((buf_size,),device=store_device),
             "action": torch.zeros((buf_size,),dtype=torch.int64),
         })
-        
+
+
 
     def act(self, obs_batch):
         pass
 
 
 class SLAgent:
-    def __init__(self, batch_size):
-        self.mode = sl_model()
+    def __init__(self, agent, batch_size, reservour_size):
+        self.agent = agent
         self.batch_size = batch_size
         buf_size = 1000000
         img_shape = (4, 84, 84)
@@ -223,12 +233,24 @@ class SLAgent:
             "observation": torch.zeros((buf_size,)+img_shape,dtype=torch.uint8),
             "action": torch.zeros((buf_size,),dtype=torch.int64),
         })
+        self.model = sl_model()
+        self.buffer = ReservourBuffer(buf, reservour_size)
 
     def train(self):
-        train_data = buf.sample(self.batch_size)
+        train_data = self.buffer.sample(self.batch_size)
 
     def act(self, obs_batch):
+        logits = self.model(obs_batch.observation)
+        probs =
+        add_item = Batch({
+            'observation': obs_batch['observation'],
+            'action': action,
+        })
+        self.buffer.add(add_item)
+
+    def save(self, save_dict):
         pass
+
 
 class CombinedAgent:
     def __init__(self, num_envs, prob_select_rl):
@@ -256,6 +278,50 @@ class CombinedAgent:
         all_actions[self.env_rl_agent] = rl_actions
 
         return all_actions
+
+
+class ReservourBuffer:
+    def __init__(self, buffer, size):
+        self.buffer = buffer
+        self.index = 0
+        self.fill_index = 0
+        self.buf_size = size
+
+    def add(self, obs):
+        if self.fill_index < self.buf_size:
+            self.buffer[self.fill_index] = obs
+            self.fill_index += 1
+        else:
+            new_idx = random.randint(0, self.index)
+            if new_idx < self.buf_size:
+                self.buffer[new_idx] = obs
+        self.index += 1
+
+    def sample(self, batch_size):
+        idxs = torch.randint(self.fill_index, size=batch_size)
+        return self.buffer[idxs]
+
+
+class QueueBuffer:
+    def __init__(self, buffer, size):
+        self.buffer = buffer
+        self.index = 0
+        self.fill_index = 0
+        self.buf_size = size
+
+    def add(self, obs):
+        if self.fill_index < self.buf_size:
+            self.fill_index += 1
+
+        self.buffer[self.index] = obs
+        self.index += 1
+        if self.index >= self.buf_size:
+            self.index = 0
+
+    def sample(self, batch_size):
+        idxs = torch.randint(self.fill_index, size=batch_size)
+        return self.buffer[idxs]
+
 
 
 
