@@ -302,7 +302,7 @@ def generate_episode_gifs(env, _agent, max_frames, save_dir, side="first_0"):
         #print(_agent.agents)
         obs = State.from_gym((observation.reshape((1, 84, 84),)), device=device, dtype=np.uint8)
         print(obs)
-        obs["agent"] = "first_0" 
+        obs["agent"] = "first_0"
         action = _agent.act(obs)
         observation, reward, done, info = env.step(action)
         print(observation.shape)
@@ -332,7 +332,7 @@ def test_single_episode(env, _agent, generate_gif_callback=None, side="first_0")
         print(_agent.agents)
         ob = State.from_gym((observation.reshape((1, 84, 84),)), device=device, dtype=np.uint8)
         print(ob)
-        ob["agent"] = "first_0" 
+        ob["agent"] = "first_0"
         action = _agent.act(ob)
         observation, reward, done, info = env.step(action)
         returns += reward

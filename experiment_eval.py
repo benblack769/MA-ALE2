@@ -11,11 +11,13 @@ import shutil
 from PIL import Image
 from env_utils import make_env, InvertColorAgentIndicator
 from all.environments import MultiagentPettingZooEnv
+from all.agents.independent import IndependentMultiagent
 
 from shared_rainbow import make_rainbow_preset
 from independent_rainbow import make_indepedent_rainbow
 from ppo_ram import make_ppo_ram_vec
 from shared_ppo import make_ppo_vec
+import supersuit as ss
 
 
 trainer_types = {
@@ -99,6 +101,8 @@ from all.logging import DummyWriter
 from all.presets import IndependentMultiagentPreset, Preset
 from all.core import State
 import torch
+import supersuit as ss
+
 
 class SingleEnvAgent(Agent):
     def __init__(self, agent):
@@ -106,6 +110,7 @@ class SingleEnvAgent(Agent):
 
     def act(self, state):
         return self.agent.act(State.array([state]))
+
 
 def main():
     parser = argparse.ArgumentParser(description="Run an multiagent Atari benchmark.")
@@ -123,6 +128,9 @@ def main():
     )
     parser.add_argument(
         "--vs-random", action="store_true", help="Play first_0 vs random for all other players."
+    )
+    parser.add_argument(
+        "--vs-builtin", action="store_true", help="Play first_0 vs the builtin agnet for other player (only compatable with certain environments which have the builtin player)."
     )
     parser.add_argument(
         "--agent-random", action="store_true", help="Play first_0 vs random for all other players."
@@ -145,26 +153,26 @@ def main():
 
     preset = torch.load(checkpoint_path, map_location=args.device)
 
-    try:
-        agent = preset.test_agent()
-        env = make_env(args.env)
-        env = MultiagentPettingZooEnv(env, args.env, device=args.device)
-        state = env.reset()
-        agent.act(state)
-    except RuntimeError:
-        env = make_env(args.env)
+    base_agent = preset.test_agent()
+    env = make_env(args.env, vs_builtin=args.vs_builtin)
+    if hasattr(base_agent, 'agents'):
+        agent = base_agent
+        if args.env.startswith("surround") and args.vs_builtin:
+            # in surround builtin, the agent is the equivalent of the
+            # second agent in the
+            agent = IndependentMultiagent({
+                "first_0" : agent.agents['second_0']
+            })
+    else:
         agent = SingleEnvAgent(preset.test_agent())
-        from all.agents.independent import IndependentMultiagent
         agent = IndependentMultiagent({
             agent_id : agent
             for agent_id in env.possible_agents
         })
         env = InvertColorAgentIndicator(env)
-        print(env.observation_spaces)
-        env = MultiagentPettingZooEnv(env, args.env, device=args.device)
-        state = env.reset()
-        print(state.observation.shape)
-        agent.act(state)
+    env = MultiagentPettingZooEnv(env, args.env, device=args.device)
+    state = env.reset()
+    agent.act(state)
 
 
     if args.vs_random:
