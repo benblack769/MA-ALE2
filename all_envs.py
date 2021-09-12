@@ -49,5 +49,13 @@ all_environments = {
     "wizard_of_wor_v2": wizard_of_wor_v2,
     "warlords_v2": warlords_v2,
 }
+builtin_envs = [
+    "boxing_v1",
+    "double_dunk_v2",
+    "ice_hockey_v1",
+    "pong_v2",
+    "surround_v1",
+    "tennis_v2",
+]
 # for e in all_environments.values():
 #     e.env()
