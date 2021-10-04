@@ -1,0 +1,154 @@
+{
+  "basketball_pong_v2": {
+    "mean_rewards": {
+      "first": -0.6888888888888889,
+      "second": 0.6851851851851852
+    }
+  },
+  "boxing_v1": {
+    "mean_rewards": {
+      "first": -1.237142857142857,
+      "second": 1.237142857142857
+    }
+  },
+  "combat_plane_v1": {
+    "mean_rewards": {
+      "first": -0.07528641571194762,
+      "second": 0.07528641571194762
+    }
+  },
+  "combat_tank_v1": {
+    "mean_rewards": {
+      "first": 0.16448445171849427,
+      "second": -0.16448445171849427
+    }
+  },
+  "double_dunk_v2": {
+    "mean_rewards": {
+      "first": -27.625435540069688,
+      "second": -1.7804878048780488
+    }
+  },
+  "entombed_competitive_v2": {
+    "mean_rewards": {
+      "first": -0.02032900896081316,
+      "second": 0.02032900896081316
+    }
+  },
+  "entombed_cooperative_v2": {
+    "mean_rewards": {
+      "first": 3.122144584789035,
+      "second": 3.122144584789035
+    }
+  },
+  "flag_capture_v1": {
+    "mean_rewards": {
+      "first": 5.0,
+      "second": 0.58
+    }
+  },
+  "foozpong_v2": {
+    "mean_rewards": {
+      "first": -0.33519553072625696,
+      "fourth": 0.33519553072625696,
+      "second": 0.33519553072625696,
+      "third": -0.33519553072625696
+    }
+  },
+  "ice_hockey_v1": {
+    "mean_rewards": {
+      "first": 0.005733944954128441,
+      "second": -0.005733944954128441
+    }
+  },
+  "joust_v2": {
+    "mean_rewards": {
+      "first": 6445.067024128686,
+      "second": 6440.026809651475
+    }
+  },
+  "mario_bros_v2": {
+    "mean_rewards": {
+      "first": 358.6600142551675,
+      "second": 344.11974340698504
+    }
+  },
+  "maze_craze_v2": {
+    "mean_rewards": {
+      "first": -0.9991349480968859,
+      "second": -0.9995674740484429
+    }
+  },
+  "othello_v2": {
+    "mean_rewards": {
+      "first": -63.55140186915888,
+      "second": -63.60747663551402
+    }
+  },
+  "pong_v2": {
+    "mean_rewards": {
+      "first": 2.2534209085933226,
+      "second": -2.2534209085933226
+    }
+  },
+  "quadrapong_v3": {
+    "mean_rewards": {
+      "first": 4.722222222222222,
+      "fourth": -4.722222222222222,
+      "second": -4.722222222222222,
+      "third": 4.722222222222222
+    }
+  },
+  "space_invaders_v1": {
+    "mean_rewards": {
+      "first": 415.94253072528994,
+      "second": 424.9749004673706
+    }
+  },
+  "space_war_v1": {
+    "mean_rewards": {
+      "first": 0.9934497816593887,
+      "second": -0.9934497816593887
+    }
+  },
+  "surround_v1": {
+    "mean_rewards": {
+      "first": 0.008106543138390272,
+      "second": -0.008106543138390272
+    }
+  },
+  "tennis_v2": {
+    "mean_rewards": {
+      "first": -5.8584905660377355,
+      "second": -9.245283018867925
+    }
+  },
+  "video_checkers_v3": {
+    "mean_rewards": {
+      "first": -73.52,
+      "second": -88.96
+    }
+  },
+  "volleyball_pong_v2": {
+    "mean_rewards": {
+      "first": -9.454019292604501,
+      "fourth": 9.454019292604501,
+      "second": 9.454019292604501,
+      "third": -9.454019292604501
+    }
+  },
+  "warlords_v2": {
+    "mean_rewards": {
+      "first": -0.446,
+      "fourth": -0.382,
+      "second": -0.562,
+      "third": -0.61
+    }
+  },
+  "wizard_of_wor_v2": {
+    "mean_rewards": {
+      "first": 1024.8447204968943,
+      "second": 1101.1732229123534
+    }
+  }
+}
