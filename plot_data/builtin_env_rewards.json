@@ -1,0 +1,32 @@
+{
+  "boxing_v1": {
+    "mean_rewards": {
+      "first": -1.2542857142857142
+    }
+  },
+  "double_dunk_v2": {
+    "mean_rewards": {
+      "first": -17.599348534201955
+    }
+  },
+  "ice_hockey_v1": {
+    "mean_rewards": {
+      "first": -10.087765957446809
+    }
+  },
+  "pong_v2": {
+    "mean_rewards": {
+      "first": -20.213053263315828
+    }
+  },
+  "surround_v1": {
+    "mean_rewards": {
+      "first": -9.998344370860927
+    }
+  },
+  "tennis_v2": {
+    "mean_rewards": {
+      "first": -23.887096774193548
+    }
+  }
+}
