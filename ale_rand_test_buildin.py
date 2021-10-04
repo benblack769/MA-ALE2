@@ -1,5 +1,5 @@
 import pytest
-from all_envs import all_environments
+from all_envs import all_environments, builtin_envs
 import pettingzoo.test.api_test as api_test
 from collections import Counter, defaultdict
 import os
@@ -8,7 +8,6 @@ import json
 import importlib
 import random
 from env_utils import make_env
-
 
 def unique(list):
     uniques = []
@@ -49,9 +48,8 @@ def exec_env(input):
     # if not("pistonball" in name):# or "butterfly" in name or name == "mpe/simple_spread" or name == "mpe/simple_speaker_listener" or name == "mpe/simple_reference" or name == "atari/entombed_cooperative" or name == "classic/hanabi"):
     #     return
     #envname = os.path.basename(module.__file__)[:-3]
-    module = all_environments[name]
-    envname =  os.path.basename(module.__file__)[:-3]
-    env = make_env(input)
+    env = make_env(name, vs_builtin=True)#all_environments[name]
+    envname =  name#os.path.basename(module.__file__)[:-3]
     env.reset()
     #print(name,": ",env.observation_spaces[env.agent_selection])
     # env = #(n_pursuers=n_pursuers)
@@ -122,7 +120,7 @@ def exec_env(input):
         }
 
 
-inputs = list(sorted(all_environments.keys()))
+inputs = list(sorted(builtin_envs))
 pool = multiprocessing.Pool(multiprocessing.cpu_count())
 all_env_rewards = pool.map(exec_env, inputs)
 #all_env_rewards = [exec_env(input) for input in inputs ]
@@ -130,6 +128,6 @@ all_env_rewards = [rew for rew in all_env_rewards if rew is not None]
 print(all_env_rewards)
 all_env_dict = dict(all_env_rewards)
 
-with open("plot_data/env_rewards.json",'w') as file:
+with open("plot_data/builtin_env_rewards.json",'w') as file:
     pretty_print = json.dumps(all_env_dict, sort_keys=True, indent=2, separators=(',', ': '))
     file.write(pretty_print)

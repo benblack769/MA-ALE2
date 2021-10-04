@@ -135,7 +135,7 @@ def make_obs_batch_from_env(observations, rewards, dones, device):
     })
 
 
-def env_loop(env_name, num_steps, num_envs, device="cpu"):
+def env_loop(env_name, hyperparams, num_cpus, device="cpu"):
     base_env = make_env(env_name)
     v_env, agent_names = make_vec_env(base_env, num_envs, num_cpus=4)
     num_agents = len(agent_names)
@@ -150,7 +150,10 @@ def env_loop(env_name, num_steps, num_envs, device="cpu"):
         observations, rewards, dones, infos = v_env.step(actions)
 
 
-# env_loop("space_invaders_v1",100,4)
+hyperparams = {
+    'num_envs': 4,
+}
+env_loop("space_invaders_v1",100,4)
 
 
 def rl_model(frames=4, hidden=512, atoms=51, sigma=0.5):
@@ -198,6 +201,7 @@ def sl_model(frames=4):
         nn.Conv2d(64, 64, 3, stride=1),
         nn.ReLU(),
         nn.Flatten(),
+
         nn.Linear(3136, 512),
         nn.ReLU(),
         nn.Linear0(512, 18),
@@ -240,13 +244,15 @@ class SLAgent:
         train_data = self.buffer.sample(self.batch_size)
 
     def act(self, obs_batch):
-        logits = self.model(obs_batch.observation)
-        probs =
-        add_item = Batch({
-            'observation': obs_batch['observation'],
-            'action': action,
-        })
-        self.buffer.add(add_item)
+        observation = obs_batch.observation
+        logits = self.model(observation)
+        actions = torch.distributions.categorical.Categorical(logits=logits)
+        for i in range(len(actions)):
+            add_item = Batch({
+                'observation': observation[i],
+                'action': actions[i],
+            })
+            self.buffer.add(add_item)
 
     def save(self, save_dict):
         pass

@@ -103,7 +103,7 @@ def main():
 
     csv_data = pandas.read_csv(csv_name)
     # print(csv_data['vs_random'])
-    csv_data = csv_data[csv_data['vs_random'] == vs_random]
+    # csv_data = csv_data[csv_data['vs_random'] == vs_random]
     csv_data['no_seed_experiment'] = [s.rsplit('_', 1)[0] for s in csv_data['experiment']]
     print(len(csv_data['no_seed_experiment']))
     print(len(set(csv_data['no_seed_experiment'])))
