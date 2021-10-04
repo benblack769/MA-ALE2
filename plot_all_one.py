@@ -7,6 +7,7 @@ import os
 import scipy
 from scipy import signal
 import sys
+import argparse
 import json
 
 from all_envs import all_environments
@@ -82,10 +83,21 @@ def get_exp_label(exp):
 
 def main():
 
-    assert len(sys.argv) == 3, "must supply name of csv file and vs_random as arguments"
+    parser = argparse.ArgumentParser(description="Run an multiagent Atari benchmark.")
+    parser.add_argument("csv_name", help="Checkpoint number.")
+    parser.add_argument(
+        "--no-vs-random", action="store_true", help="Play first_0 vs random for all other players."
+    )
+    parser.add_argument(
+        "--vs-builtin", action="store_true", help="Play first_0 vs random for all other players."
+    )
+    args = parser.parse_args()
 
-    csv_name = sys.argv[1]
-    vs_random = bool(sys.argv[2])
+    # assert len(sys.argv) == 3, "must supply name of csv file and vs_random as arguments"
+
+    csv_name = args.csv_name#sys.argv[1]
+    vs_random = not args.no_vs_random#bool(sys.argv[2])
+    vs_builtin = args.vs_builtin#bool(sys.argv[2])
 
 
     matplotlib.use("pgf")
@@ -99,17 +111,17 @@ def main():
         "pgf.rcfonts": False
     });
 
-    plt.figure(figsize=(2.65*3*1.0, 1.5*7*1.0))
 
     csv_data = pandas.read_csv(csv_name)
     # print(csv_data['vs_random'])
-    # csv_data = csv_data[csv_data['vs_random'] == vs_random]
+    if not vs_builtin:
+        csv_data = csv_data[csv_data['vs_random'] == vs_random]
     csv_data['no_seed_experiment'] = [s.rsplit('_', 1)[0] for s in csv_data['experiment']]
-    print(len(csv_data['no_seed_experiment']))
-    print(len(set(csv_data['no_seed_experiment'])))
-    print(len(set(csv_data['checkpoint'])))
-    print(len(set(csv_data['agent'])))
-    print(len(set(csv_data['vs_random'])))
+    # print(len(csv_data['no_seed_experiment']))
+    # print(len(set(csv_data['no_seed_experiment'])))
+    # print(len(set(csv_data['checkpoint'])))
+    # print(len(set(csv_data['agent'])))
+    # print(len(set(csv_data['vs_random'])))
     del csv_data['experiment']
     grouped = csv_data.groupby([
         'no_seed_experiment',
@@ -132,7 +144,10 @@ def main():
     # print(accumed)
     # return
     # random rewards gleaned with ale_rand_test.py
-    random_data = json.load(open("plot_data/rand_rewards.json"))
+    if vs_builtin:
+        random_data = json.load(open("plot_data/builtin_env_rewards.json"))
+    else:
+        random_data = json.load(open("plot_data/rand_rewards.json"))
     csv_data = accumed#[(accumed['agent'] == "first_0")]
     #print(data)
     all_envs = list(sorted(set(csv_data['no_seed_experiment'])))
@@ -149,8 +164,11 @@ def main():
         'shared_rainbow': "orange",
     }
     plot_ind = 1
+    num_envs = len(all_envs)
+    num_rows = (num_envs+2)//3
+    plt.figure(figsize=(2.65*3*1.0, 1.5*7*1.0/8*num_rows))
     for env in all_envs:
-        plt.subplot(8,3,plot_ind)
+        plt.subplot(num_rows,3,plot_ind)
         # ax = plt.gca()
         #df = pd.read_csv(os.path.join(data_path, env+'.csv'))
         # data = df.to_numpy()
@@ -182,13 +200,14 @@ def main():
         plt.margins(x=0)
         plot_ind += 1
 
+    oop_name = "Random" if not vs_builtin else "Builtin"
     name_map = {
-        'shared_ppo': "PPO Agent vs Random Agent",
-        'shared_rainbow': "Rainbow Agent vs Random Agent",
+        'shared_ppo': f"PPO Agent vs {oop_name} Agent",
+        'shared_rainbow': f"Rainbow Agent vs {oop_name} Agent",
     }
     name_sublist = [name_map[algo] for algo in all_algo_names]
     lint_sublist = [algo_lines[algo] for algo in all_algo_names]
-    plt.figlegend(lint_sublist+[rand_line],name_sublist + [ "Random Agent vs Random Agent"], fontsize='x-large', loc='lower center', ncol=1, labelspacing=.2, columnspacing=.25, borderpad=.25, bbox_to_anchor=(0.68,0.06))
+    plt.figlegend(lint_sublist+[rand_line],name_sublist + [ f"Random Agent vs {oop_name} Agent"], fontsize='x-large', loc='lower center', ncol=1, labelspacing=.2, columnspacing=.25, borderpad=.25, bbox_to_anchor=(0.68,0.06))
     plt.savefig(f"{csv_name}.pgf", bbox_inches = 'tight',pad_inches = .025)
     plt.savefig(f"{csv_name}.png", bbox_inches = 'tight',pad_inches = .025, dpi=600)
 
