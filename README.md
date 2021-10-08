@@ -4,6 +4,23 @@
 pip install git+https://github.com/cpnota/autonomous-learning-library/tree/develop
 ```
 
+### Run
+
+```
+python3 plot_all_one.py plot_data/builtin_results.csv --vs-builtin
+```
+
+Generates the plots vs the builtin agent
+
+```
+python3 plot_all_one.py plot_data/all_out.txt  
+```
+
+Generates the plots vs the random agent
+
+Plots can be found near the data file, i.e. `plot_data/all_out.txt.png`
+
+
 ### Files
 
 * Environment code
